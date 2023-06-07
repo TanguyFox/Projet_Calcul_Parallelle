@@ -32,8 +32,6 @@ public class LancerRaytracer {
         // création d'une fenêtre
         Disp disp = new Disp("Raytracer", largeur, hauteur);
 
-        // Initialisation d'une scène depuis le modèle
-        Scene scene = new Scene(fichier_description, largeur, hauteur);
 
         // Calcul de l'image de la scène les paramètres :
         // - x0 et y0 : correspondant au coin haut à gauche
