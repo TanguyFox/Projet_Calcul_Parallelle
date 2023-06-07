@@ -5,10 +5,10 @@ import java.time.Duration;
 import raytracer.Disp;
 import raytracer.Scene;
 import raytracer.Image;
+import service.ServiceImage;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class LancerRaytracer {

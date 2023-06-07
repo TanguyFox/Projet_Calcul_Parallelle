@@ -1,3 +1,5 @@
+package service;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -40,6 +42,6 @@ public class DistributeurNoeud implements ServiceDistributeur {
         reg.rebind("distributeur", sd);
 
         System.out.println("EN attente d'une requete");
-        
+
     }
 }
