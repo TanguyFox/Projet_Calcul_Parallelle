@@ -1,22 +1,15 @@
+package image;
+
+import service.ServiceDistributeur;
+import service.ServiceImage;
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import raytracer.Image;
-import raytracer.Scene;
-import service.ServiceDistributeur;
-import service.ServiceImage;
-
-public class DistributeurImage implements ServiceImage {
-
-    @Override
-    public Image donnerImage(Scene scene, int x, int y, int l, int h) throws RemoteException {
-
-       return scene.compute(x, y, l, h);
-        
-    }
+public class MainImage {
 
     public static void main(String[] args) throws RemoteException, NotBoundException {
 
@@ -30,4 +23,5 @@ public class DistributeurImage implements ServiceImage {
         System.out.println("Service enregistre");
 
     }
+
 }

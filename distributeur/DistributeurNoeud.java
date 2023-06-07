@@ -1,9 +1,13 @@
-package service;
+package distributeur;
 
-import java.rmi.Remote;
+import service.ServiceDistributeur;
+import service.ServiceImage;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RemoteServer;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,15 +16,23 @@ public class DistributeurNoeud implements ServiceDistributeur {
 
     private List<ServiceImage> noeuds = new ArrayList<>();
     private int index;
+
     public DistributeurNoeud() {
         this.index = 0;
     }
 
     public void enregistrerNoeud(ServiceImage noeud) throws RemoteException {
         this.noeuds.add(noeud);
+        String clientIP = null;
+        try {
+            clientIP = RemoteServer.getClientHost();
+        } catch (ServerNotActiveException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Noeud Ajouté - IP: " + clientIP);
     }
 
-    public ServiceImage donnerNoeud() throws RemoteException {
+    public synchronized ServiceImage donnerNoeud() throws RemoteException {
         if (index < noeuds.size()) {
             ServiceImage n = noeuds.get(index);
             index++;
@@ -33,15 +45,5 @@ public class DistributeurNoeud implements ServiceDistributeur {
         }
     }
 
-    public static void main(String[] args) throws RemoteException {
 
-        DistributeurNoeud dn = new DistributeurNoeud();
-        ServiceDistributeur sd = (ServiceDistributeur) UnicastRemoteObject.exportObject(dn, 0);
-
-        Registry reg = LocateRegistry.createRegistry(1099);
-        reg.rebind("distributeur", sd);
-
-        System.out.println("EN attente d'une requete");
-
-    }
 }

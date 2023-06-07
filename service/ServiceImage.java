@@ -6,7 +6,8 @@ import raytracer.Image;
 import raytracer.Scene;
 
 public interface ServiceImage extends Remote {
+    String getInformation() throws RemoteException;
 
-    public Image donnerImage (Scene scene, int x, int y, int l, int h) throws RemoteException;
+    Image donnerImage(Scene scene, int x, int y, int l, int h) throws RemoteException;
     
 }

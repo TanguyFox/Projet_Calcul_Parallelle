@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class Client {
 
@@ -25,7 +26,7 @@ public class Client {
      * @param hauteur hauteur de l'image
      * @param desiredLargeur largeur de morceau
      * @param desiredHauteur hauteur de morceau
-     * @return
+     * @return Exemple {[0,0,10,10],[10,10,10,10],[20,20,10,10]...}
      */
     public static ArrayList<int[]> decoupeEnList(int largeur, int hauteur, int desiredLargeur, int desiredHauteur){
 
@@ -39,22 +40,22 @@ public class Client {
             }
         }
 
-        for (int[] crop : imageList) {
-            int x = crop[0];
-            int y = crop[1];
-            int l = crop[2];
-            int h = crop[3];
-            System.out.println("(" + x + ", " + y + ", " + l + ", " + h + ")");
-        }
+//        for (int[] crop : imageList) {
+//            int x = crop[0];
+//            int y = crop[1];
+//            int l = crop[2];
+//            int h = crop[3];
+//            System.out.println("(" + x + ", " + y + ", " + l + ", " + h + ")");
+//        }
         return imageList;
     }
 
-    public static void main(String[] args) throws RemoteException, NotBoundException {
+    public static void main(String[] args) throws RemoteException, NotBoundException, InterruptedException {
 
         String fichier_description="simple.txt";
 
         // largeur et hauteur par défaut de l'image à reconstruire
-        int largeur = 1000, hauteur = 1000, desiredlargeur = 50, desiredhauteur = 50;
+        int largeur = 512, hauteur = 512, desiredlargeur = 50, desiredhauteur = 50;
 
 
         if(args.length > 0){
@@ -76,6 +77,10 @@ public class Client {
 
         ArrayList<int[]> imageList = decoupeEnList(largeur, hauteur, desiredlargeur, desiredhauteur);
 
+        //Calculer le temps
+        int numThreads = imageList.size();
+        CountDownLatch latch = new CountDownLatch(numThreads);
+
         Registry registry = LocateRegistry.getRegistry("localhost",1099);
 
         ServiceDistributeur sd = (ServiceDistributeur) registry.lookup("distributeur");
@@ -83,20 +88,22 @@ public class Client {
         Instant debut = Instant.now();
 
         for(int[] list : imageList){
-            Thread thread = new Thread(){
-                public void run(){
-                    ServiceImage si = null;
-                    try {
-                        si = sd.donnerNoeud();
-                        Image image = si.donnerImage(scene,list[0],list[1],list[2],list[3]);
-                        disp.setImage(image,list[0],list[1]);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+            Thread thread = new Thread(() -> {
+                ServiceImage si = null;
+                try {
+                    si = sd.donnerNoeud();
+                    System.out.println("Donner la tâche à l'adresse IP " + si.getInformation()+" - x:"+list[0]+" - y:"+list[1]+" - largeur:"+list[2]+" - hauteur:"+list[3]);
+                    Image image = si.donnerImage(scene,list[0],list[1],list[2],list[3]);
+                    disp.setImage(image,list[0],list[1]);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
-            };
+                latch.countDown();
+            });
             thread.start();
         }
+
+        latch.await();
 
         Instant fin = Instant.now();
 
