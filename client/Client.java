@@ -54,7 +54,7 @@ public class Client {
         String fichier_description="simple.txt";
 
         // largeur et hauteur par défaut de l'image à reconstruire
-        int largeur = 512, hauteur = 512, desiredlargeur = 50, desiredhauteur = 50;
+        int largeur = 1000, hauteur = 1000, desiredlargeur = 50, desiredhauteur = 50;
 
 
         if(args.length > 0){
@@ -83,9 +83,19 @@ public class Client {
         Instant debut = Instant.now();
 
         for(int[] list : imageList){
-            ServiceImage si = sd.donnerNoeud();
-            Image image = si.donnerImage(scene,list[0],list[1],list[2],list[3]);
-            disp.setImage(image,list[0],list[1]);
+            Thread thread = new Thread(){
+                public void run(){
+                    ServiceImage si = null;
+                    try {
+                        si = sd.donnerNoeud();
+                        Image image = si.donnerImage(scene,list[0],list[1],list[2],list[3]);
+                        disp.setImage(image,list[0],list[1]);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            thread.start();
         }
 
         Instant fin = Instant.now();
