@@ -1,10 +1,8 @@
-package client;
-
 import raytracer.Disp;
 import raytracer.Image;
 import raytracer.Scene;
 import service.ServiceDistributeur;
-import service.ServiceImage;
+import service.ServiceNoeud;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -13,7 +11,6 @@ import java.rmi.registry.Registry;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class Client {
@@ -89,7 +86,7 @@ public class Client {
 
         for(int[] list : imageList){
             Thread thread = new Thread(() -> {
-                ServiceImage si = null;
+                ServiceNoeud si = null;
                 try {
                     si = sd.donnerNoeud();
                     System.out.println("Donner la tâche à l'adresse IP " + si.getInformation()+" - x:"+list[0]+" - y:"+list[1]+" - largeur:"+list[2]+" - hauteur:"+list[3]);

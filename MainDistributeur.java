@@ -1,5 +1,4 @@
-package distributeur;
-
+import distributeur.DistributeurNoeud;
 import service.ServiceDistributeur;
 
 import java.net.InetAddress;

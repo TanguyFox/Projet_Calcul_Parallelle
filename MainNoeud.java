@@ -1,7 +1,6 @@
-package image;
-
+import image.Noeud;
 import service.ServiceDistributeur;
-import service.ServiceImage;
+import service.ServiceNoeud;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -9,7 +8,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class MainImage {
+public class MainNoeud {
 
     public static void main(String[] args) throws RemoteException, NotBoundException {
 
@@ -24,10 +23,10 @@ public class MainImage {
         }
 
 
-        DistributeurImage di = new DistributeurImage();
+        Noeud di = new Noeud();
         System.out.println("IP address: "+di.getInformation());
 
-        ServiceImage si = (ServiceImage) UnicastRemoteObject.exportObject(di, 0);
+        ServiceNoeud si = (ServiceNoeud) UnicastRemoteObject.exportObject(di, 0);
 
         Registry reg = LocateRegistry.getRegistry(host,port);
 
