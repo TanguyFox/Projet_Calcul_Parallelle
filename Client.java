@@ -15,17 +15,16 @@ import java.util.concurrent.CountDownLatch;
 
 public class Client {
 
-    public static String aide = "Raytracer : synthèse d'image par lancé de rayons (https://en.wikipedia.org/wiki/Ray_tracing_(graphics))\n\nUsage : java LancerRaytracer [fichier-scène] [largeur] [hauteur]\n\tfichier-scène : la description de la scène (par défaut simple.txt)\n\tlargeur : largeur de l'image calculée (par défaut 512)\n\thauteur : hauteur de l'image calculée (par défaut 512)\n";
+    public static String aide = "Raytracer : synthèse d'image par lancé de rayons (https://en.wikipedia.org/wiki/Ray_tracing_(graphics))\n\nUsage : java LancerRaytracer [IP-Distributeur] [port-Distributeur] [fichier-scène] [largeur] [hauteur]\n\tIP-Distributeur : l'adresse IP de Distributeur (par défaut localhost)\n\tport-Distributeur : la port de Distributeur (par défaut 1099)\n\tfichier-scène : la description de la scène (par défaut simple.txt)\n\tlargeur : largeur de l'image calculée (par défaut 512)\n\thauteur : hauteur de l'image calculée (par défaut 512)\n";
 
     /**
-     *
-     * @param largeur largeur de l'image
-     * @param hauteur hauteur de l'image
+     * @param largeur        largeur de l'image
+     * @param hauteur        hauteur de l'image
      * @param desiredLargeur largeur de morceau
      * @param desiredHauteur hauteur de morceau
      * @return Exemple {[0,0,10,10],[10,10,10,10],[20,20,10,10]...}
      */
-    public static ArrayList<int[]> decoupeEnList(int largeur, int hauteur, int desiredLargeur, int desiredHauteur){
+    public static ArrayList<int[]> decoupeEnList(int largeur, int hauteur, int desiredLargeur, int desiredHauteur) {
 
         ArrayList<int[]> imageList = new ArrayList<>();
 
@@ -47,23 +46,33 @@ public class Client {
         return imageList;
     }
 
+    /***
+     *
+     * @param args [IP-Distributeur] [port-Distributeur] [fichier-scène] [largeur] [hauteur]
+     */
     public static void main(String[] args) throws RemoteException, NotBoundException, InterruptedException {
 
-        String fichier_description="simple.txt";
+        String fichier_description = "simple.txt";
 
         // largeur et hauteur par défaut de l'image à reconstruire
         int largeur = 512, hauteur = 512, desiredlargeur = 50, desiredhauteur = 50;
 
+        String host = "localhost"; //address IP Distributeur
+        int port = 1099;
 
-        if(args.length > 0){
-            fichier_description = args[0];
-            if(args.length > 1){
-                largeur = Integer.parseInt(args[1]);
-                if(args.length > 2)
-                    hauteur = Integer.parseInt(args[2]);
-            }
-        }else{
-            System.out.println(aide);
+        switch(args.length){
+            case 5:
+                hauteur = Integer.parseInt(args[4]);
+            case 4:
+                largeur = Integer.parseInt(args[3]);
+            case 3:
+                fichier_description = args[2];
+            case 2:
+                port = Integer.parseInt(args[1]);
+            case 1 :
+                host = args[0];
+            default:
+                System.out.println(aide);
         }
 
         // création d'une fenêtre
@@ -78,20 +87,20 @@ public class Client {
         int numThreads = imageList.size();
         CountDownLatch latch = new CountDownLatch(numThreads);
 
-        Registry registry = LocateRegistry.getRegistry("localhost",1099);
+        Registry registry = LocateRegistry.getRegistry(host, port);
 
         ServiceDistributeur sd = (ServiceDistributeur) registry.lookup("distributeur");
 
         Instant debut = Instant.now();
 
-        for(int[] list : imageList){
+        for (int[] list : imageList) {
             Thread thread = new Thread(() -> {
                 ServiceNoeud si = null;
                 try {
                     si = sd.donnerNoeud();
-                    System.out.println("Donner la tâche à l'adresse IP " + si.getInformation()+" - x:"+list[0]+" - y:"+list[1]+" - largeur:"+list[2]+" - hauteur:"+list[3]);
-                    Image image = si.donnerImage(scene,list[0],list[1],list[2],list[3]);
-                    disp.setImage(image,list[0],list[1]);
+                    System.out.println("Donner la tâche à l'adresse IP " + si.getInformation() + " - x:" + list[0] + " - y:" + list[1] + " - largeur:" + list[2] + " - hauteur:" + list[3]);
+                    Image image = si.donnerImage(scene, list[0], list[1], list[2], list[3]);
+                    disp.setImage(image, list[0], list[1]);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -106,7 +115,7 @@ public class Client {
 
         long duree = Duration.between(debut, fin).toMillis();
 
-        System.out.println("Image calculée en :"+duree+" ms");
+        System.out.println("Image calculée en :" + duree + " ms");
 
     }
 }

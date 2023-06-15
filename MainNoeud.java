@@ -1,4 +1,4 @@
-import image.Noeud;
+import noeud.Noeud;
 import service.ServiceDistributeur;
 import service.ServiceNoeud;
 
@@ -10,6 +10,10 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class MainNoeud {
 
+    /**
+     *
+     * @param args [IP-Distributeur] [port-Distributeur]
+     */
     public static void main(String[] args) throws RemoteException, NotBoundException {
 
         String host = "localhost";
@@ -22,17 +26,12 @@ public class MainNoeud {
             }
         }
 
-
         Noeud di = new Noeud();
         System.out.println("IP address: "+di.getInformation());
-
         ServiceNoeud si = (ServiceNoeud) UnicastRemoteObject.exportObject(di, 0);
-
         Registry reg = LocateRegistry.getRegistry(host,port);
-
         ServiceDistributeur sd = (ServiceDistributeur) reg.lookup("distributeur");
         sd.enregistrerNoeud(si);
-
         System.out.println("Service enregistre");
 
     }

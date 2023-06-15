@@ -10,6 +10,10 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class MainDistributeur {
 
+    /***
+     *
+     * @param args [port]
+     */
     public static void main(String[] args) throws RemoteException {
 
         int port = 1099;
@@ -32,7 +36,7 @@ public class MainDistributeur {
         Registry reg = LocateRegistry.createRegistry(port);
         reg.rebind("distributeur", sd);
 
-        System.out.println("EN attente d'une requete");
+        System.out.println("En attente d'une requete");
 
 
     }
