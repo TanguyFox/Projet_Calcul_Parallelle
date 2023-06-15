@@ -1,3 +1,4 @@
+import noeud.NoeudInfo;
 import raytracer.Disp;
 import raytracer.Image;
 import raytracer.Scene;
@@ -93,21 +94,62 @@ public class Client {
 
         Instant debut = Instant.now();
 
-        for (int[] list : imageList) {
+        for(int i=0; i < imageList.size(); i++){
+            int[] list = imageList.get(i);
             Thread thread = new Thread(() -> {
+                NoeudInfo ni = null;
                 ServiceNoeud si = null;
                 try {
-                    si = sd.donnerNoeud();
+                    ni = sd.donnerNoeud();
+                    si = ni.getNoeud();
                     System.out.println("Donner la tâche à l'adresse IP " + si.getInformation() + " - x:" + list[0] + " - y:" + list[1] + " - largeur:" + list[2] + " - hauteur:" + list[3]);
                     Image image = si.donnerImage(scene, list[0], list[1], list[2], list[3]);
                     disp.setImage(image, list[0], list[1]);
                 } catch (RemoteException e) {
+                    System.out.println("Erreur!!!");
+                    try {
+                        if(ni != null){
+                            sd.supprimerNoeud(ni.getIp());
+                        }
+                    } catch (RemoteException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    imageList.add(list);
                     e.printStackTrace();
                 }
                 latch.countDown();
             });
             thread.start();
         }
+
+
+
+//        for (int[] list : imageList) {
+//            Thread thread = new Thread(() -> {
+//                NoeudInfo ni = null;
+//                ServiceNoeud si = null;
+//                try {
+//                    ni = sd.donnerNoeud();
+//                    si = ni.getNoeud();
+//                    System.out.println("Donner la tâche à l'adresse IP " + si.getInformation() + " - x:" + list[0] + " - y:" + list[1] + " - largeur:" + list[2] + " - hauteur:" + list[3]);
+//                    Image image = si.donnerImage(scene, list[0], list[1], list[2], list[3]);
+//                    disp.setImage(image, list[0], list[1]);
+//                } catch (RemoteException e) {
+//                    System.out.println("Erreur!!!");
+//                    try {
+//                        if(ni != null){
+//                            sd.supprimerNoeud(ni.getIp());
+//                        }
+//                    } catch (RemoteException ex) {
+//                        throw new RuntimeException(ex);
+//                    }
+//                    imageList.add(list);
+//                    e.printStackTrace();
+//                }
+//                latch.countDown();
+//            });
+//            thread.start();
+//        }
 
         latch.await();
 
