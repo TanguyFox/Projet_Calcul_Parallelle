@@ -93,7 +93,8 @@ public class Client {
 
         Instant debut = Instant.now();
 
-        for (int[] list : imageList) {
+        for (int i=0; i<imageList.size(); i++) {
+            int[] list = imageList.get(i);
             Thread thread = new Thread(() -> {
                 ServiceNoeud si = null;
                 try {
@@ -103,8 +104,9 @@ public class Client {
                     disp.setImage(image, list[0], list[1]);
                 } catch (RemoteException e) {
                     e.printStackTrace();
+                } finally {
+                    latch.countDown();
                 }
-                latch.countDown();
             });
             thread.start();
         }
