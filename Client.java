@@ -12,7 +12,7 @@ import java.rmi.registry.Registry;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Client {
 
@@ -85,8 +85,8 @@ public class Client {
         ArrayList<int[]> imageList = decoupeEnList(largeur, hauteur, desiredlargeur, desiredhauteur);
 
         //Calculer le temps
-        int numThreads = imageList.size();
-        CountDownLatch latch = new CountDownLatch(numThreads);
+//        int numThreads = imageList.size();
+//        CountDownLatch latch = new CountDownLatch(numThreads);
 
         Registry registry = LocateRegistry.getRegistry(host, port);
 
@@ -94,33 +94,37 @@ public class Client {
 
         Instant debut = Instant.now();
 
-        for(int i=0; i < imageList.size(); i++){
-            int[] list = imageList.get(i);
-            Thread thread = new Thread(() -> {
-                NoeudInfo ni = null;
-                ServiceNoeud si = null;
-                try {
-                    ni = sd.donnerNoeud();
-                    si = ni.getNoeud();
-                    System.out.println("Donner la tâche à l'adresse IP " + si.getInformation() + " - x:" + list[0] + " - y:" + list[1] + " - largeur:" + list[2] + " - hauteur:" + list[3]);
-                    Image image = si.donnerImage(scene, list[0], list[1], list[2], list[3]);
-                    disp.setImage(image, list[0], list[1]);
-                } catch (RemoteException e) {
-                    System.out.println("Erreur!!!");
+        AtomicInteger nb_traite = new AtomicInteger(imageList.size());
+
+        do {
+            while (imageList.size() != 0) {
+                int[] list = imageList.get(0);
+                imageList.remove(0);
+                Thread thread = new Thread(() -> {
+                    NoeudInfo ni = null;
+                    ServiceNoeud si = null;
                     try {
-                        if(ni != null){
-                            sd.supprimerNoeud(ni.getIp());
+                        ni = sd.donnerNoeud();
+                        si = ni.getNoeud();
+                        System.out.println("Donner la tâche à l'adresse IP " + si.getInformation() + " - x:" + list[0] + " - y:" + list[1] + " - largeur:" + list[2] + " - hauteur:" + list[3]);
+                        Image image = si.donnerImage(scene, list[0], list[1], list[2], list[3]);
+                        disp.setImage(image, list[0], list[1]);
+                        nb_traite.getAndDecrement();
+                    } catch (RemoteException e) {
+//                        System.out.println("Erreur!!!");
+                        try {
+                            if (ni != null) {
+                                sd.supprimerNoeud(ni.getIp());
+                            }
+                        } catch (RemoteException ex) {
+//                            throw new RuntimeException(ex);
                         }
-                    } catch (RemoteException ex) {
-                        throw new RuntimeException(ex);
+                        imageList.add(list);
                     }
-                    imageList.add(list);
-                    e.printStackTrace();
-                }
-                latch.countDown();
-            });
-            thread.start();
-        }
+                });
+                thread.start();
+            }
+        } while (nb_traite.get() != 0);
 
 
 
@@ -151,7 +155,7 @@ public class Client {
 //            thread.start();
 //        }
 
-        latch.await();
+//        latch.await();
 
         Instant fin = Instant.now();
 

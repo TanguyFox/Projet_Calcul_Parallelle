@@ -13,6 +13,7 @@ public class DistributeurNoeud implements ServiceDistributeur {
 
     private HashMap<String,ServiceNoeud> noeuds;
     public void supprimerNoeud(String ip){
+        System.out.println("Remove IP: "+ip);
         noeuds.remove(ip);
     }
 
